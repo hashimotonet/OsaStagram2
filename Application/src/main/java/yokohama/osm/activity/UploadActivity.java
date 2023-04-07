@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 
@@ -33,6 +35,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
 
 import yokohama.osm.R;
 
@@ -42,6 +45,11 @@ import static yokohama.osm.util.ImageUtil.uri2File;
 
 public class UploadActivity extends Activity
                                 implements View.OnClickListener{
+
+    /**
+     * 画像描画領域
+     */
+    private ImageView ivPhoto;
 
     /**
      * 画像イメージのURI
@@ -78,13 +86,16 @@ public class UploadActivity extends Activity
 
         //
         // アップロード処理ボタンのオンクリックリスナ登録
-        findViewById(R.id.upload).setOnClickListener(this);
+        View upload = findViewById(R.id.upload);
+        upload.setOnClickListener(this);
 
         // 一覧画面表示処理ボタンのオンクリックリスナ登録
-        findViewById(R.id.listImages).setOnClickListener(this);
+        View listImages = findViewById(R.id.listImages);
+        listImages.setOnClickListener(this);
 
         // キャンセル処理ボタンのオンクリックリスナ登録
-        findViewById(R.id.cancel).setOnClickListener(this);
+        View cancel = findViewById(R.id.cancel);
+        cancel.setOnClickListener(this);
 
         // ネットワーク利用可能可否の判定
         if(isNetworkAvailable() == false) {
@@ -97,37 +108,44 @@ public class UploadActivity extends Activity
         // 前画面からの情報取得。
         Intent intent = getIntent();
         String extra = intent.getStringExtra("Uri");
+
+        // 利用者ID取得
         this.id =     intent.getStringExtra("id");
-        Log.i("IMPORTANT", "extra = " + extra);
-        Log.w("IMPORTANT", "id = " + this.id);
 
+        // レイアウトサイズ取得
+        ImageView layout = findViewById(R.id.uploadImageView);
+        int layoutWidth = layout.getWidth();
+        int layoutHeight = layout.getHeight();
 
-        _uri = Uri.parse(extra);
-        File file = uri2File(_uri);
-        if (file != null) {
-            Log.i("IMPORTANT", "file.exists() = " + file.exists());
-        } else {
-            Log.w("IMPORTANT", "File is null.....");
-        }
+        // アップロード対象画像データ取得
+        byte[] data = intent.getByteArrayExtra("data");
+        int width = intent.getIntExtra("width",layoutWidth);
+        int height = intent.getIntExtra("height",layoutHeight);
+        Bitmap bmp = Bitmap.createBitmap(width , height, Bitmap.Config.ARGB_8888);
+        bmp.copyPixelsFromBuffer(ByteBuffer.wrap(data));
+        //Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
+        //Log.i("IMPORTANT", "extra = " + extra);
+        //Log.w("IMPORTANT", "id = " + this.id);
 
-        ImageView ivPhoto = findViewById(R.id.uploadImageView);
+        // 画像データを描画
+        ivPhoto = findViewById(R.id.uploadImageView);
         ivPhoto.setImageResource(R.drawable.tile);
+        ivPhoto.setImageBitmap(bmp);
 
-        Log.i("IMPORTANT", "(ivPhoto != null) : " + (ivPhoto != null));
+        Log.i("IMPORTANT", "(bmp != null) : " + (bmp != null));
 
         try {
             // 画像表示の非同期クラス起動。
             DownloadImageTask async = new DownloadImageTask(ivPhoto);
 
             // 非同期処理起動。
-            // 前画面から渡されたURIを基に、画像表示を行う。
-            async.execute(extra);
+            async.execute(bmp);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        Log.i("IMPORTANT","uri = " + _uri.toString());
+        // Log.i("IMPORTANT","uri = " + _uri);
 
     }
 
@@ -196,7 +214,8 @@ public class UploadActivity extends Activity
                 try {
 //                    base64 = convertImage2Base64(getApplicationContext(),this._uri);
                     // 画像の縦横の変換を行う。
-                    base64 = convertRotatedImage2Base64(getApplicationContext(),this._uri);
+                    base64 = convertRotatedImage2Base64(getApplicationContext(), ((BitmapDrawable)ivPhoto.getDrawable()).getBitmap());
+                    //base64 = convertRotatedImage2Base64(getApplicationContext(),this._uri);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -229,6 +248,7 @@ public class UploadActivity extends Activity
                 //
                 // アップロードキャンセル処理
                 //
+                Log.v("log", String.valueOf(super.isDestroyed()));
                 super.finish();
 
                 // switch を抜ける。
@@ -276,15 +296,18 @@ public class UploadActivity extends Activity
             this.bmImage = bmImage;
         }
 
+        public Bitmap execute(Bitmap bmp) {
+            return bmp;
+        }
+
         /**
          * 当クラスメインの非同期処理。
          * String型の可変長引数を受け取れる形式だが、一つの引数にのみ対応しており、
          * 2つ目以降の引数には対応していない。
          * Bitmap型を返却する。
          *
-         * @param urls URL群
+         * @param //urls URL群
          * @return Bitmap 当メソッドで取得されたビットマップ
-         */
         protected Bitmap doInBackground(String... urls) {
 
             // 可変長引数より、最初の引数であるURLを取得。
@@ -296,7 +319,7 @@ public class UploadActivity extends Activity
             // try 節に入る。
             try {
                 // URL文字列より入力ストリームを取得する。
-                InputStream in = new java.net.URL(urldisplay).openStream();
+                 InputStream in = new java.net.URL(urldisplay).openStream();
 
                 // BitmapFactoryのdecodeStreamメソッドで、
                 // 入力ストリームよりビットマップを取得する。
@@ -309,6 +332,17 @@ public class UploadActivity extends Activity
 
             // 取得したビットマップを返却する。
             return mIcon11;
+        }
+         */
+
+        protected Bitmap doInBackground(Bitmap bmp) {
+            return bmp;
+        }
+
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            return null;
         }
 
         /**
@@ -338,7 +372,7 @@ public class UploadActivity extends Activity
             String queryString = createQueryString(params);
             //IDと画像データを使って接続URL文字列を作成。
             String urlStr = "http://52.68.110.102:8080/PhotoGallery/Upload";
-            urlStr = "https://192.168.11.10:8080/PhotoGallery/Upload";
+            urlStr = "https://192.168.11.15:8443/PhotoGallery/Upload";
             //要求受信結果である応答を格納。
             String result = "";
 

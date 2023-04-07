@@ -21,6 +21,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,11 +35,13 @@ import android.widget.ImageView;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import yokohama.osm.R;
+import yokohama.osm.activity.UploadActivity;
 
 public class CameraAlignmentActivity extends AppCompatActivity {
 
@@ -47,13 +50,18 @@ public class CameraAlignmentActivity extends AppCompatActivity {
     private ImageView imageView;
     private View imageCaptureButton;
     private View getContentButton;
-    private View bothButton;
+    private View submitButton;
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
 
     private final int REQUEST_TAKE_PHOTO = 1;
 
     private String currentPhotoPath;
+
+    /**
+     * 利用者ID
+     */
+    public static String id;
 
     /*
     private void dispatchTakePictureIntent() {
@@ -161,19 +169,55 @@ public class CameraAlignmentActivity extends AppCompatActivity {
         imageView = (ImageView)findViewById(R.id.image_view);
         imageCaptureButton = (View)findViewById(R.id.camera_button);
         getContentButton = (View) findViewById(R.id.get_content_button);
-        bothButton = (View)findViewById(R.id.both_button);
+        submitButton = (View)findViewById(R.id.both_button);
 
         enableNormalFunction();
+
         CheckPermission(CameraAlignmentActivity.this,
                 Manifest.permission.CAMERA,
                 PackageManager.PERMISSION_GRANTED);
+
         mObserver = new MyLifecycleObserver(CameraAlignmentActivity.this.getActivityResultRegistry());
         getLifecycle().addObserver(mObserver);
     }
 
+    private void nextPage(Bitmap bmp) {
+        Intent intent = new Intent(this, UploadActivity.class);
+        intent.putExtra("data", bmp2byteArray(bmp));
+        intent.putExtra("height", bmp.getHeight());
+        intent.putExtra("width", bmp.getWidth());
+        startActivity(intent);
+    }
+
+    public byte[] bmp2byteArray(Bitmap bitmap) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(bitmap.getByteCount());
+        bitmap.copyPixelsToBuffer(byteBuffer);
+        byte[] bmparr = byteBuffer.array();
+        return bmparr;
+    }
+
     private void enableNormalFunction() {
+        // 送信ボタンにイベントリスナ設定
+        if (null != submitButton) {
+            submitButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.v("log","test");
+                    //mObserver.selectImage();
+                    // 次画面であるアップロード画面にdataオブジェクトを渡す処理。
+                    Bitmap bmp = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+                    if (null != bmp) {
+                        nextPage(bmp);
+                    } else {
+                        System.out.println("画像データがありません。");
+                    }
+                }
+
+            });
+        }
+
+        // イメージ選択ボタンにイベントリスナ設定
         if (null != getContentButton) {
-            //permissionResult.launch(Manifest.permission.ACCESS_FINE_LOCATION);
             getContentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -209,7 +253,6 @@ public class CameraAlignmentActivity extends AppCompatActivity {
     }
 
     private void enableCameraFunction() {
-        // 小さな画像をカメラから取得する。実機で試したところ 260*195 の画像だった。
         ActivityResultLauncher takePicturePreview = registerForActivityResult(new TakePicturePreview(), this::onPicture);
         imageCaptureButton.setOnClickListener(new View.OnClickListener(){
             @Override

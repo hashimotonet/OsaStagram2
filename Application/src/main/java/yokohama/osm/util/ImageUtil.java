@@ -65,6 +65,30 @@ public class ImageUtil {
         return base64;
     }
 
+    /**
+     * 画像縦横回転変換を行うファサードメソッド。
+     *
+     * @param context
+     * @param bitmap
+     * @return
+     * @throws FileNotFoundException
+     */
+    public static String convertRotatedImage2Base64(Context context, Bitmap bitmap)
+            throws FileNotFoundException {
+        String base64 = null;
+
+        File tempFile = FileUtil.saveTemporaryFile(bitmap);
+
+        ImageRotateUtil rotator = new ImageRotateUtil(tempFile.getPath());
+        tempFile = rotator.rotateImage();
+
+        //bitmap = ImageUtil.file2Bitmap(tempFile);
+        base64 = ImageUtil.convertImage2Base64(bitmap);
+
+        return base64;
+    }
+
+
 
     public static String  convertImage2Base64(Context context, Uri uri) throws FileNotFoundException {
         String base64 = null;

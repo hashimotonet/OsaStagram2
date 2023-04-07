@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import yokohama.osm.activity.UploadActivity;
+import yokohama.osm.camera.CameraAlignmentActivity;
 import yokohama.osm.camera2basic.CameraActivity;
 
 import static java.nio.file.Files.readAllBytes;
@@ -45,7 +46,7 @@ public class FileUtil {
         try {
             // sdcardフォルダを指定
             //File root = Environment.getExternalStorageDirectory();
-            File root = CameraActivity.getInstance().getFilesDir();
+            File root = new CameraAlignmentActivity().getFilesDir();
 
             // 日付でファイル名を作成　
             Date mDate = new Date();
