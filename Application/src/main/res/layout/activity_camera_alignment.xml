@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="16dp"
+    android:id="@+id/rootLayout"
+    tools:context=".ex_camera.MainActivity">
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/camera_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <!-- android:src="@mipmap/ic_launcher" -->
+    <Button
+        android:id="@+id/get_content_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="get content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/camera_button"
+        app:layout_constraintStart_toStartOf="parent" />
+    <Button
+        android:id="@+id/camera_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="camera"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/both_button"
+        app:layout_constraintStart_toEndOf="@id/get_content_button" />
+    <Button
+        android:id="@+id/both_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="both"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/camera_button" />
+</androidx.constraintlayout.widget.ConstraintLayout>

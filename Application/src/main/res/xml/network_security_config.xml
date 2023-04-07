@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <domain-config>
+        <domain includeSubdomains="true">192.168.11.10</domain>
+        <trust-anchors>
+            <certificates src="@raw/root_ca"
+                tools:ignore="NetworkSecurityConfig" />
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
