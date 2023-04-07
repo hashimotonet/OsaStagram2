@@ -1,7 +1,11 @@
 
 
-OsaStagram
+OsaStagram2
 ===================================
+
+OsaStagram2はOsaStagramアプリのマイグレーションによる後継バージョンです。
+
+--------------------------
 
 OsaStagramは、サーバーアプリ：[PhotoGallery][1]に対する、フロントアプリであり、
 Androidプラットフォーム上で稼働します
