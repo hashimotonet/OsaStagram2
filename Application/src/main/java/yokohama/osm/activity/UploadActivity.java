@@ -1,11 +1,13 @@
 package yokohama.osm.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -59,7 +61,7 @@ public class UploadActivity extends Activity
     /**
      * 利用者ID
      */
-    private String id;
+    private String id = "hashimoto";
 
     /**
      * デフォルトコンストラクタ
@@ -113,22 +115,32 @@ public class UploadActivity extends Activity
         this.id =     intent.getStringExtra("id");
 
         // レイアウトサイズ取得
-        ImageView layout = findViewById(R.id.uploadImageView);
-        int layoutWidth = layout.getWidth();
-        int layoutHeight = layout.getHeight();
+        @SuppressLint({"MissingInflatedId", "LocalSuppress"}) ImageView layout = findViewById(R.id.uploadImageView);
+        int layoutWidth = intent.getIntExtra("layoutWidth", layout.getWidth());
+        int layoutHeight =intent.getIntExtra("layoutHeight", layout.getHeight());
 
         // アップロード対象画像データ取得
-        byte[] data = intent.getByteArrayExtra("data");
+        String b64String = intent.getStringExtra("data");
+        byte[] data = Base64.decode(b64String, Base64.DEFAULT);
         int width = intent.getIntExtra("width",layoutWidth);
         int height = intent.getIntExtra("height",layoutHeight);
-        Bitmap bmp = Bitmap.createBitmap(width , height, Bitmap.Config.ARGB_8888);
-        bmp.copyPixelsFromBuffer(ByteBuffer.wrap(data));
-        //Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
+
+        // アカウント名取得
+        this.id = intent.getStringExtra("id");
+
+        // 描画エリア
+        ivPhoto = findViewById(R.id.uploadImageView);
+        ivPhoto.setMaxWidth(width);
+        ivPhoto.setMaxHeight(height);
+
+        //Bitmap bmp = Bitmap.createBitmap(width , height, Bitmap.Config.ARGB_8888);
+        //bmp.copyPixelsFromBuffer(ByteBuffer.wrap(data).rewind());
+        Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
+        bmp = createScaleBitmap(bmp,width,height,layoutWidth,layoutHeight);
         //Log.i("IMPORTANT", "extra = " + extra);
-        //Log.w("IMPORTANT", "id = " + this.id);
+        Log.w("IMPORTANT", "id = " + this.id);
 
         // 画像データを描画
-        ivPhoto = findViewById(R.id.uploadImageView);
         ivPhoto.setImageResource(R.drawable.tile);
         ivPhoto.setImageBitmap(bmp);
 
@@ -149,6 +161,18 @@ public class UploadActivity extends Activity
 
     }
 
+    public Bitmap createScaleBitmap(Bitmap bm, int width, int height, int layoutWidth, int layoutHeight) {
+
+        //Bitmap bm = byte2bmp(bytes);
+        Matrix matrix = new Matrix();
+
+        float xScale = height / layoutHeight;
+        float yScale = xScale;
+
+        matrix.postScale(xScale, yScale);
+
+        return Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, false);
+    }
     /**
      * アップロード処理完了後は、画像は内部ストレージに残さず
      * クラウドネットワークから取得するので、内部ストレージに

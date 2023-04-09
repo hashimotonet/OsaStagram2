@@ -27,12 +27,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.webkit.PermissionRequest;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -183,17 +185,44 @@ public class CameraAlignmentActivity extends AppCompatActivity {
 
     private void nextPage(Bitmap bmp) {
         Intent intent = new Intent(this, UploadActivity.class);
-        intent.putExtra("data", bmp2byteArray(bmp));
-        intent.putExtra("height", bmp.getHeight());
-        intent.putExtra("width", bmp.getWidth());
+        intent.putExtra("data", byteArray2Base64String(bmpBlob2byteArray(bmp)));
+        intent.putExtra("height", imageView.getHeight());
+        intent.putExtra("width", imageView.getWidth());
+        intent.putExtra("layoutWidth", bmp.getScaledHeight(imageView.getHeight()));
+        intent.putExtra("layoutHeight", bmp.getScaledWidth(imageView.getWidth()));
         startActivity(intent);
     }
 
+    /**
+     * 引数のビットマップをバイト配列に変換する。
+     *
+     * @param bitmap
+     * @return
+     */
     public byte[] bmp2byteArray(Bitmap bitmap) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(bitmap.getByteCount());
         bitmap.copyPixelsToBuffer(byteBuffer);
         byte[] bmparr = byteBuffer.array();
         return bmparr;
+    }
+
+    /**
+     * 引数のバイト配列をBase64形式にエンコードする。
+     *
+     * @param array
+     * @return
+     */
+    public String byteArray2Base64String(byte[] array) {
+        String encImage = Base64.encodeToString(array, Base64.DEFAULT);
+        return encImage;
+    }
+
+    @Deprecated
+    public byte[] bmpBlob2byteArray(Bitmap bitmap) {
+        ByteArrayOutputStream blob = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100 /* Ignored for PNGs */, blob);
+        byte[] bitmapdata = blob.toByteArray();
+        return bitmapdata;
     }
 
     private void enableNormalFunction() {
