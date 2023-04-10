@@ -1,11 +1,13 @@
 package yokohama.osm.util;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.ImageView;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -54,7 +56,10 @@ public class ImageUtil {
 
         Bitmap bitmap = ImageUtil.uri2Bitmap(context, uri);
 
-        File tempFile = FileUtil.saveTemporaryFile(bitmap);
+        File tempFile = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            tempFile = new File(uri.getPath());
+        }
 
         ImageRotateUtil rotator = new ImageRotateUtil(tempFile.getPath());
         tempFile = rotator.rotateImage();
@@ -73,11 +78,14 @@ public class ImageUtil {
      * @return
      * @throws FileNotFoundException
      */
-    public static String convertRotatedImage2Base64(Context context, Bitmap bitmap)
+    public static String convertRotatedImage2Base64(Context context, ContentResolver resolver, Bitmap bitmap, ImageView imageView)
             throws FileNotFoundException {
         String base64 = null;
 
-        File tempFile = FileUtil.saveTemporaryFile(bitmap);
+        File tempFile = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            tempFile = new File(FileUtil.saveTemporaryFile(bitmap, context, resolver, imageView).getPath());
+        }
 
         ImageRotateUtil rotator = new ImageRotateUtil(tempFile.getPath());
         tempFile = rotator.rotateImage();

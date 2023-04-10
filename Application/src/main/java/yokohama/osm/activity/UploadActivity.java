@@ -238,8 +238,9 @@ public class UploadActivity extends Activity
                 try {
 //                    base64 = convertImage2Base64(getApplicationContext(),this._uri);
                     // 画像の縦横の変換を行う。
-                    base64 = convertRotatedImage2Base64(getApplicationContext(), ((BitmapDrawable)ivPhoto.getDrawable()).getBitmap());
+                    base64 = convertRotatedImage2Base64(getApplicationContext(), getContentResolver(), ((BitmapDrawable)ivPhoto.getDrawable()).getBitmap(), ivPhoto);
                     //base64 = convertRotatedImage2Base64(getApplicationContext(),this._uri);
+
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
