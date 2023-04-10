@@ -88,7 +88,7 @@ public class ImageUtil {
         }
 
         ImageRotateUtil rotator = new ImageRotateUtil(tempFile.getPath());
-        tempFile = rotator.rotateImage();
+        // tempFile = rotator.rotateImage(); // TODO 暫定コメントアウト
 
         //bitmap = ImageUtil.file2Bitmap(tempFile);
         base64 = ImageUtil.convertImage2Base64(bitmap);

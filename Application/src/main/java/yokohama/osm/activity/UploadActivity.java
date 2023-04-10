@@ -38,12 +38,21 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import yokohama.osm.R;
 
 import static yokohama.osm.util.ImageUtil.convertImage2Base64;
 import static yokohama.osm.util.ImageUtil.convertRotatedImage2Base64;
 import static yokohama.osm.util.ImageUtil.uri2File;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class UploadActivity extends Activity
                                 implements View.OnClickListener{
@@ -401,18 +410,55 @@ public class UploadActivity extends Activity
             //要求受信結果である応答を格納。
             String result = "";
 
-            //http接続を行うHttpURLConnectionオブジェクトを宣言。finallyで確実に解放するためにtry外で宣言。
-            HttpURLConnection con = null;
+            //https接続を行うHttpsURLConnectionオブジェクトを宣言。finallyで確実に解放するためにtry外で宣言。
+            HttpsURLConnection con = null;
 
             //http接続のレスポンスデータとして取得するInputStreamオブジェクトを宣言。同じくtry外で宣言。
             InputStream is = null;
+
+            SSLContext sslcontext = null;
+
+            try {
+                //証明書情報　全て空を返す
+                TrustManager[] tm = {
+                        new X509TrustManager() {
+                            public X509Certificate[] getAcceptedIssuers() {
+                                return null;
+                            }//function
+                            @Override
+                            public void checkClientTrusted(X509Certificate[] chain,
+                                                           String authType) throws CertificateException {
+                            }//function
+                            @Override
+                            public void checkServerTrusted(X509Certificate[] chain,
+                                                           String authType) throws CertificateException {
+                            }//function
+                        }//class
+                };
+                sslcontext = SSLContext.getInstance("SSL");
+                sslcontext.init(null, tm, null);
+                //ホスト名の検証ルール　何が来てもtrueを返す
+                HttpsURLConnection.setDefaultHostnameVerifier(
+                        new HostnameVerifier(){
+                            @Override
+                            public boolean verify(String hostname,
+                                                  SSLSession session) {
+                                return true;
+                            }//function
+                        }//class
+                );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }//try
 
             try {
                 //URLオブジェクトを生成。
                 URL url = new URL(urlStr);
 
                 //URLオブジェクトからHttpURLConnectionオブジェクトを取得。
-                con = (HttpURLConnection) url.openConnection();
+                con = (HttpsURLConnection) url.openConnection();
+
+                con.setSSLSocketFactory(sslcontext.getSocketFactory());
 
                 //http接続メソッドを設定。
                 con.setRequestMethod("POST");
@@ -460,7 +506,7 @@ public class UploadActivity extends Activity
 
                 Log.d("IMPORTANT","status = " + status);
 
-                //HttpURLConnectionオブジェクトからレスポンスデータを取得。
+                //HttpsURLConnectionオブジェクトからレスポンスデータを取得。
                 is = con.getInputStream();
 
                 //レスポンスデータであるInputStreamオブジェクトを文字列に変換。
@@ -476,7 +522,7 @@ public class UploadActivity extends Activity
 //            } catch (InterruptedException e) {
 //                e.printStackTrace();
             } finally {
-                //HttpURLConnectionオブジェクトがnullでないなら解放。
+                //HttpsURLConnectionオブジェクトがnullでないなら解放。
                 if(con != null) {
                     con.disconnect();
                 }

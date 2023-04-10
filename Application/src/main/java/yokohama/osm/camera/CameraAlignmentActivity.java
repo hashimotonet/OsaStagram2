@@ -63,7 +63,7 @@ public class CameraAlignmentActivity extends AppCompatActivity {
     /**
      * 利用者ID
      */
-    public static String id;
+    public static String id = "hashimoto";
 
     /*
     private void dispatchTakePictureIntent() {
@@ -185,6 +185,7 @@ public class CameraAlignmentActivity extends AppCompatActivity {
 
     private void nextPage(Bitmap bmp) {
         Intent intent = new Intent(this, UploadActivity.class);
+        intent.putExtra("id", CameraAlignmentActivity.id);
         intent.putExtra("data", byteArray2Base64String(bmpBlob2byteArray(bmp)));
         intent.putExtra("height", imageView.getHeight());
         intent.putExtra("width", imageView.getWidth());
