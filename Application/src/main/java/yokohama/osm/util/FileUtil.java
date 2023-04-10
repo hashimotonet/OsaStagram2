@@ -81,7 +81,7 @@ public class FileUtil {
                 }
 
                 values.clear();
-                //　排他的にアクセスの解除
+                //　排他的アクセスの解除
                 values.put(MediaStore.Images.Media.IS_PENDING, 0);
                 resolver.update(item, values, null, null);
             }
