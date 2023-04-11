@@ -103,17 +103,18 @@ public class ListImagesActivity extends AppCompatActivity {
 
             //可変長引数でPOSTパラメータ書式生成
             //String queryString = "id=" + params[0] + "&status=" + params[1];
-            String  queryString = "id=hashimoto.osamu%40gmail.com&status=1";
-            //String queryString = "id=hashimoto";
+            //String  queryString = "id=hashimoto.osamu%40gmail.com&status=1";
+            String queryString = "id=hashimoto";
             //IDと画像データを使って接続URL文字列を作成。
             String urlStr = "http://52.68.110.102:8080/PhotoGallery/ListImages";
-            urlStr = "https://192.168.11.15:8443/PhotoGallery/ListImages";
+            //urlStr = "https://192.168.11.15:8443/PhotoGallery/ListImages";
+            urlStr = "http://192.168.11.11:8080/PhotoGallery/ListImages/images";
 
             //要求受信結果である応答を格納。
             String result = "";
 
             //http接続を行うHttpURLConnectionオブジェクトを宣言。finallyで確実に解放するためにtry外で宣言。
-            HttpsURLConnection con = null;
+            HttpURLConnection con = null;
 
             //http接続のレスポンスデータとして取得するInputStreamオブジェクトを宣言。同じくtry外で宣言。
             InputStream is = null;
@@ -158,7 +159,7 @@ public class ListImagesActivity extends AppCompatActivity {
                 URL url = new URL(urlStr);
 
                 //URLオブジェクトからHttpURLConnectionオブジェクトを取得。
-                con = (HttpsURLConnection) url.openConnection();
+                con = (HttpURLConnection) url.openConnection();
 
                 //http接続メソッドを設定。
                 con.setRequestMethod("POST");
@@ -263,7 +264,8 @@ public class ListImagesActivity extends AppCompatActivity {
             GridAdapter adapter = new GridAdapter(
                     getApplicationContext(),
                     R.layout.grid_items,
-                    thumbnails);
+                    //thumbnails);
+                    urls);
 
             // gridViewにadapterをセット
             gridview.setAdapter(adapter);
