@@ -406,12 +406,13 @@ public class UploadActivity extends Activity
             String queryString = createQueryString(params);
             //IDと画像データを使って接続URL文字列を作成。
             String urlStr = "http://52.68.110.102:8080/PhotoGallery/Upload";
-            urlStr = "https://192.168.11.15:8443/PhotoGallery/Upload";
+            //urlStr = "https://192.168.11.15:8443/PhotoGallery/Upload";
+            urlStr = "http://192.168.11.11:8080/PhotoGallery/Upload";
             //要求受信結果である応答を格納。
             String result = "";
 
-            //https接続を行うHttpsURLConnectionオブジェクトを宣言。finallyで確実に解放するためにtry外で宣言。
-            HttpsURLConnection con = null;
+            //http接続を行うHttpURLConnectionオブジェクトを宣言。finallyで確実に解放するためにtry外で宣言。
+            HttpURLConnection con = null;
 
             //http接続のレスポンスデータとして取得するInputStreamオブジェクトを宣言。同じくtry外で宣言。
             InputStream is = null;
@@ -456,9 +457,9 @@ public class UploadActivity extends Activity
                 URL url = new URL(urlStr);
 
                 //URLオブジェクトからHttpURLConnectionオブジェクトを取得。
-                con = (HttpsURLConnection) url.openConnection();
+                con = (HttpURLConnection) url.openConnection();
 
-                con.setSSLSocketFactory(sslcontext.getSocketFactory());
+                //con.setSSLSocketFactory(sslcontext.getSocketFactory());
 
                 //http接続メソッドを設定。
                 con.setRequestMethod("POST");

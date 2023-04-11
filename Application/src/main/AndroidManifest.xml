@@ -53,10 +53,6 @@
         </provider>
 
         <activity
-            android:name=".ex_camera.MainActivity"
-            android:exported="true">
-        </activity>
-        <activity
             android:name=".activity.ui.login.LoginActivity"
             android:exported="true"
             android:label="@string/title_activity_login">
