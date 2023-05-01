@@ -40,6 +40,8 @@ import yokohama.osm.activity.UploadActivity;
 
 public class CameraAlignmentActivity extends AppCompatActivity {
 
+    private android.hardware.Camera mCamera = null;
+
     private MyLifecycleObserver mObserver;
 
     private ImageView imageView;
@@ -52,6 +54,8 @@ public class CameraAlignmentActivity extends AppCompatActivity {
     private final int REQUEST_TAKE_PHOTO = 1;
 
     private String currentPhotoPath;
+
+    private int cameraFacing = android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT;
 
     /**
      * 利用者ID
@@ -89,8 +93,10 @@ public class CameraAlignmentActivity extends AppCompatActivity {
 
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
         try {
             startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            cameraFacing = cameraInfo.facing;
         } catch (ActivityNotFoundException e) {
             // display error state to the user
             e.printStackTrace();
@@ -167,7 +173,7 @@ public class CameraAlignmentActivity extends AppCompatActivity {
                 java.io.FileOutputStream fileOutputStream  = null;
             try {
                 fileOutputStream  = new java.io.FileOutputStream(file);
-                imageBitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                imageBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
                 fileOutputStream.close();
 
                 // イメージを反転
@@ -240,7 +246,7 @@ public class CameraAlignmentActivity extends AppCompatActivity {
     @Deprecated
     public byte[] bmpBlob2byteArray(Bitmap bitmap) {
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100 /* Ignored for PNGs */, blob);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, blob);
         byte[] bitmapdata = blob.toByteArray();
         return bitmapdata;
     }
@@ -323,13 +329,17 @@ public class CameraAlignmentActivity extends AppCompatActivity {
 
         parcelFileDescriptor.close();
 
-        android.widget.Toast.makeText(CameraAlignmentActivity.this, "orientation = " + orientation, android.widget.Toast.LENGTH_SHORT).show();
+        android.widget.Toast.makeText(CameraAlignmentActivity.this, "orientation = " + orientation + "\ncameraFacing = " + cameraFacing, android.widget.Toast.LENGTH_LONG).show();
 
-        int amplication = 270;
+        // カメラのフロントとリアで回転幅を切り替える
+        int amplication = 270;  // リアカメラの場合
+        if (cameraFacing == android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            amplication = 90;   //　フロントカメラの場合
+        }
 
         switch (orientation) {
             case 0:
-                return rotateImage(bitmap, amplication);
+                return rotateImage(bitmap, 0 + amplication);
             case androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90:
                 return rotateImage(bitmap, 90 + amplication);
             case androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180:
@@ -355,27 +365,6 @@ public class CameraAlignmentActivity extends AppCompatActivity {
         bitmap.recycle();
         return rotatedImg;
     }
-//    private void enableCameraFunction() {
-//        ActivityResultLauncher takePicturePreview = registerForActivityResult(new TakePicturePreview(), this::onPicture);
-//        imageCaptureButton.setOnClickListener(new View.OnClickListener(){
-//            @Override
-//            public void onClick(View v) {
-//                Log.v("log", "imageCaptureButton.");
-//                takePicturePreview.launch(new TakePicture());
-//            }
-//        });
-//    }
-
-//    private void showPicture(File imgFile) {
-//        if(imgFile.exists()){
-//            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-//            this.imageView.setImageBitmap(myBitmap);
-//        }
-//    }
-
-//    private void onPicture(Bitmap bitmap) {
-//        imageView.setImageBitmap(bitmap);
-//    }
 
     class MyLifecycleObserver implements DefaultLifecycleObserver {
         private final ActivityResultRegistry mRegistry;
@@ -386,7 +375,6 @@ public class CameraAlignmentActivity extends AppCompatActivity {
         }
 
         public void onCreate(@NonNull LifecycleOwner owner) {
-            // ...
 
             mGetContent = mRegistry.register("key", owner, new GetContent(),
                     new ActivityResultCallback<Uri>() {
