@@ -276,7 +276,7 @@ public class ListImagesActivity extends AppCompatActivity {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     photo = urls.get(position);
                     String msg = position + "番目のアイテムがクリックされました";
-                    msg += msg + " \n " + photo;
+                    msg = msg + " \n " + photo;
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                     //
                     // インテント、URLを引数に、一画面イメージの描画アクティビティを表示する。

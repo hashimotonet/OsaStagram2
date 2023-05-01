@@ -10,8 +10,9 @@
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:gravity="center"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toTopOf="@id/camera_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

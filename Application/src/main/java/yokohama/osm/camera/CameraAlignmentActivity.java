@@ -1,38 +1,32 @@
 package yokohama.osm.camera;
 
-import static androidx.activity.result.contract.ActivityResultContracts.*;
-
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.ActivityResultRegistry;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
-import androidx.lifecycle.DefaultLifecycleObserver;
-import androidx.lifecycle.LifecycleOwner;
+import static androidx.activity.result.contract.ActivityResultContracts.GetContent;
 
 import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.webkit.PermissionRequest;
-import android.widget.Button;
 import android.widget.ImageView;
+
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.ActivityResultRegistry;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -40,7 +34,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import yokohama.osm.R;
 import yokohama.osm.activity.UploadActivity;
@@ -153,11 +146,37 @@ public class CameraAlignmentActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            android.os.Bundle extras = data.getExtras();
+            android.graphics.Bitmap imageBitmap = (android.graphics.Bitmap) extras.get("data");
+
+            // カメラ画像イメージをバイト配列に変換
+            ByteBuffer byteBuffer = ByteBuffer.allocate(imageBitmap.getByteCount());
+            imageBitmap.copyPixelsToBuffer(byteBuffer);
+            byte[] bmparr = byteBuffer.array();
+
+            java.io.File file = null;
+            try {
+                file = createImageFile();
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            }
+            java.io.ByteArrayOutputStream bytesOutStream = null;
+                java.io.FileOutputStream fileOutputStream  = null;
+            try {
+                fileOutputStream  = new java.io.FileOutputStream(file);
+                imageBitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                fileOutputStream.close();
+
+                // イメージを反転
+                imageBitmap = rotateImageIfRequired(imageBitmap, this.getBaseContext(), android.net.Uri.fromFile(file));
+            } catch (java.io.IOException e) {
+                // エラーメッセージ表示
+                android.widget.Toast.makeText(this, e.getLocalizedMessage(), android.widget.Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            }
             imageView.setImageBitmap(imageBitmap);
         }
     }
@@ -282,20 +301,81 @@ public class CameraAlignmentActivity extends AppCompatActivity {
         return true;
     }
 
-    private void enableCameraFunction() {
-        ActivityResultLauncher takePicturePreview = registerForActivityResult(new TakePicturePreview(), this::onPicture);
-        imageCaptureButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                Log.v("log", "imageCaptureButton.");
-                takePicturePreview.launch(new TakePicture());
-            }
-        });
+    /**
+     * Rotate an image if required.
+     * https://www.samieltamawy.com/how-to-fix-the-camera-intent-rotated-image-in-android/
+     *
+     * @param bitmap The image bitmap
+     * @param context
+     * @param uri    Image URI
+     * @return The resulted Bitmap after manipulation
+     */
+    public Bitmap rotateImageIfRequired(Bitmap bitmap, android.content.Context context, Uri uri) throws IOException {
+        android.os.ParcelFileDescriptor parcelFileDescriptor =
+                context.getContentResolver().openFileDescriptor(uri, "r");
+        java.io.FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+
+        Log.i("info", "fileDescriptor = " + String.valueOf(fileDescriptor));
+        Log.i("info", "uri.getPath()  = " + uri.getPath());
+
+        androidx.exifinterface.media.ExifInterface ei = new androidx.exifinterface.media.ExifInterface(uri.getPath());
+        int orientation = ei.getAttributeInt(androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION, androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL);
+
+        parcelFileDescriptor.close();
+
+        android.widget.Toast.makeText(CameraAlignmentActivity.this, "orientation = " + orientation, android.widget.Toast.LENGTH_SHORT).show();
+
+        int amplication = 270;
+
+        switch (orientation) {
+            case 0:
+                return rotateImage(bitmap, amplication);
+            case androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90:
+                return rotateImage(bitmap, 90 + amplication);
+            case androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180:
+                return rotateImage(bitmap, 180 + amplication);
+            case androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270:
+                return rotateImage(bitmap, 270 + amplication);
+            default:
+                return bitmap;
+        }
     }
 
-    private void onPicture(Bitmap bitmap) {
-        imageView.setImageBitmap(bitmap);
+    /**
+     * rotate image
+     *
+     * @param bitmap
+     * @param degree
+     * @return
+     */
+    private Bitmap rotateImage(Bitmap bitmap, int degree) {
+        android.graphics.Matrix matrix = new android.graphics.Matrix();
+        matrix.postRotate(degree);
+        Bitmap rotatedImg = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        bitmap.recycle();
+        return rotatedImg;
     }
+//    private void enableCameraFunction() {
+//        ActivityResultLauncher takePicturePreview = registerForActivityResult(new TakePicturePreview(), this::onPicture);
+//        imageCaptureButton.setOnClickListener(new View.OnClickListener(){
+//            @Override
+//            public void onClick(View v) {
+//                Log.v("log", "imageCaptureButton.");
+//                takePicturePreview.launch(new TakePicture());
+//            }
+//        });
+//    }
+
+//    private void showPicture(File imgFile) {
+//        if(imgFile.exists()){
+//            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+//            this.imageView.setImageBitmap(myBitmap);
+//        }
+//    }
+
+//    private void onPicture(Bitmap bitmap) {
+//        imageView.setImageBitmap(bitmap);
+//    }
 
     class MyLifecycleObserver implements DefaultLifecycleObserver {
         private final ActivityResultRegistry mRegistry;

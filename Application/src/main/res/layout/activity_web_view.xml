@@ -22,7 +22,7 @@
             android:id="@+id/go2List"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button"
+            android:text="NEXT"
             tools:ignore="MissingConstraints"
             tools:layout_editor_absoluteX="125dp"
             tools:layout_editor_absoluteY="638dp" />
