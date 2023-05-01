@@ -4,15 +4,10 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -26,16 +21,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -47,10 +46,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import yokohama.osm.R;
-import yokohama.osm.activity.WebViewActivity;
-import yokohama.osm.activity.ui.login.LoginViewModel;
-import yokohama.osm.activity.ui.login.LoginViewModelFactory;
-import yokohama.osm.camera2basic.CameraActivity;
+import yokohama.osm.camera.CameraAlignmentActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -214,11 +210,7 @@ public class LoginActivity extends AppCompatActivity {
 
             //Toast.makeText(getApplicationContext(), authResult, Toast.LENGTH_LONG).show();
 
-            if (authResult.startsWith("success")) {
-                return true;
-            } else  {
-                return false;
-            }
+            return authResult.startsWith("success");
         }
 
         @Override
@@ -245,7 +237,8 @@ public class LoginActivity extends AppCompatActivity {
 
         private void nextPage() {
             String id = mEmail;
-            Intent intent = new Intent(LoginActivity.this, WebViewActivity.class);
+            Intent intent;
+            intent = new android.content.Intent(LoginActivity.this, CameraAlignmentActivity.class);
             intent.putExtra("id", id);
             startActivity(intent);
         }
@@ -389,7 +382,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 try {
                     out = con.getOutputStream();
-                    out.write(queryString.getBytes("UTF-8"));
+                    out.write(queryString.getBytes(StandardCharsets.UTF_8));
                     out.flush();
                     Log.d("IMPORTANT", "flush");
                 } catch (IOException e) {
@@ -454,5 +447,3 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 }
-
-
