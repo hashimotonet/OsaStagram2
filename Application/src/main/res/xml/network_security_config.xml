@@ -10,5 +10,7 @@
     </domain-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.11.11</domain>
+        <domain includeSubdomains="true">ec2-52-68-126-14.ap-northeast-1.compute.amazonaws.com</domain>
+        <domain includeSubdomains="true">52.68.126.14</domain>
     </domain-config>
 </network-security-config>

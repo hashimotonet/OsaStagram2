@@ -87,7 +87,7 @@ public class ImageUtil {
             tempFile = new File(FileUtil.saveTemporaryFile(bitmap, context, resolver, imageView).getPath());
         }
 
-        ImageRotateUtil rotator = new ImageRotateUtil(tempFile.getPath());
+        //ImageRotateUtil rotator = new ImageRotateUtil(tempFile.getPath());
         // tempFile = rotator.rotateImage(); // TODO 暫定コメントアウト
 
         //bitmap = ImageUtil.file2Bitmap(tempFile);

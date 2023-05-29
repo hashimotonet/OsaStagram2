@@ -106,9 +106,12 @@ public class ListImagesActivity extends AppCompatActivity {
             //String  queryString = "id=hashimoto.osamu%40gmail.com&status=1";
             String queryString = "id=hashimoto";
             //IDと画像データを使って接続URL文字列を作成。
+            String domain = getString(R.string.domain);
             String urlStr = "http://52.68.110.102:8080/PhotoGallery/ListImages";
             //urlStr = "https://192.168.11.15:8443/PhotoGallery/ListImages";
-            urlStr = "http://192.168.11.11:8080/PhotoGallery/ListImages/images";
+            //urlStr = "http://192.168.11.11:8080/PhotoGallery/ListImages/images";
+            //urlStr = "http://52.68.126.14:8080/PhotoGallery/ListImages";
+            urlStr = "http://" + domain + ":8080/PhotoGallery/ListImages";
 
             //要求受信結果である応答を格納。
             String result = "";

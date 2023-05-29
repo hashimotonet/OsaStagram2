@@ -62,7 +62,7 @@ public class FileUtil {
                 ContentValues values = new ContentValues();
                 // コンテンツ クエリの列名
                 // ファイル名
-                values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName.format(mDate) + ".png");
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName.format(mDate) + ".jpg");
                 // MIMEの設定
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
                 // 書込み時にメディア ファイルに排他的にアクセスする
@@ -74,7 +74,9 @@ public class FileUtil {
                 item = resolver.insert(collection, values);
 
                 try (OutputStream outstream = resolver.openOutputStream(item)) {
-                    bmp.compress(Bitmap.CompressFormat.PNG, 100, outstream);
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, outstream);
+                    outstream.flush();
+                    outstream.close();
                     imageView.setImageBitmap(bmp);
                 } catch (IOException e) {
                     e.printStackTrace();

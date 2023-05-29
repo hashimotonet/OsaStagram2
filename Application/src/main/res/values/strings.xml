@@ -31,4 +31,6 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="domain">52.68.126.14</string>
+    <!-- <string name="domain">192.168.11.11</string> -->
 </resources>

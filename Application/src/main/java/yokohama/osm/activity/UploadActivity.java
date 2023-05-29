@@ -405,9 +405,12 @@ public class UploadActivity extends Activity
             //可変長引数でPOSTパラメータ書式生成
             String queryString = createQueryString(params);
             //IDと画像データを使って接続URL文字列を作成。
+            String domain = getString(R.string.domain);
             String urlStr = "http://52.68.110.102:8080/PhotoGallery/Upload";
             //urlStr = "https://192.168.11.15:8443/PhotoGallery/Upload";
-            urlStr = "http://192.168.11.11:8080/PhotoGallery/Upload";
+            //urlStr = "http://192.168.11.11:8080/PhotoGallery/Upload";
+            //urlStr = "http://52.68.126.14:8080/PhotoGallery/Upload";
+            urlStr = "http://" + domain + ":8080/PhotoGallery/Upload";
             //要求受信結果である応答を格納。
             String result = "";
 

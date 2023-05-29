@@ -196,8 +196,11 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             // attempt authentication against a network service.
+            String domain = getString(R.string.domain);
             String url = "http://52.68.110.102:8080/PhotoGallery/SignIn";
-            url = "https://192.168.11.15:8443/PhotoGallery/SignIn";
+            //url = "https://192.168.11.15:8443/PhotoGallery/SignIn";
+            //url = "https://52.68.126.14:8080/PhotoGallery/SignIn";
+            url = "http://" + domain + ":8080/PhotoGallery/SignIn";
 
             CloudServerConnection connection = new CloudServerConnection(mEmail, mPassword,url);
             String authResult = connection.authenticate();
